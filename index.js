@@ -1,7 +1,6 @@
 import { i18n } from '@kbn/i18n';
 
-import exampleRoute from './server/routes/example';
-import allAlertsRoute from './server/routes/all_alerts';
+import alertsRoute from './server/routes/alerts';
 import acknowledgeAlertRoute from './server/routes/acknowledge_alert';
 
 export default function(kibana) {
@@ -59,8 +58,7 @@ export default function(kibana) {
       }
 
       // Add server routes and initialize the plugin here
-      exampleRoute(server);
-      allAlertsRoute(server);
+      alertsRoute(server);
       acknowledgeAlertRoute(server);
     },
   });

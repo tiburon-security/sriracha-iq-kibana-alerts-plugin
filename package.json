@@ -1,7 +1,7 @@
 {
   "name": "srirachaiq_alerts",
-  "version": "0.0.0",
-  "description": "SrirachaIQ Alerts",
+  "version": "1.0.0",
+  "description": "SrirachaIQ - Alerts",
   "main": "index.js",
   "kibana": {
     "version": "7.6.0",

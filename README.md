@@ -1,6 +1,6 @@
-# srirachaiq_alerts
+# SrirachaIQ - Alerts Kibana Plugin
 
-> SrirachaIQ Alerts
+> Kibana Plugin for displaying ElastaAlerts within a table with functionality for acknowledging alerts once they've been actioned and/or viewed. Intended for use within the SrirachaIQ cybersecurity toolkit, which uses ElastAlert for "detecting badness".
 
 ---
 
