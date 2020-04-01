@@ -43,8 +43,9 @@ export class Main extends React.Component {
 	
 	
 	componentDidMount() {
-		this.fetchData();
-		this.fetchIndices();
+		this.fetchIndexPatterns().then(() =>{
+			this.fetchData();
+		});
 	}	
  
  
@@ -63,7 +64,6 @@ export class Main extends React.Component {
 				}
 			})
 			.then(data =>{
-				
 				const prevStateAcknowledged = this.state.showAcknowledged;
 			
 				this.setState({ data: data }, ()=>{
@@ -83,15 +83,65 @@ export class Main extends React.Component {
 			key: rand
 		})
 	}
+
+	
+	/**
+	 * Creates array mapping of ID->Title for every Kibana Index Pattern
+	 */
+	fetchIndexPatterns(){
+		return new Promise((resolve, reject) => {
+			fetch('../api/saved_objects/_find?type=index-pattern&fields=title&per_page=10000')
+				.then(response => {
+					if (!response.ok) {
+						alert("Failed to fetch index patterns - try refreshing the page.");
+						console.error(response);
+						throw "Failed to fetch index patterns."
+					} else {	
+						return response.json();	
+					}
+				})
+				.then(data =>{
+					let indexPatternMappings = {};
+					
+					for(let obj of data.saved_objects){
+						indexPatternMappings[obj.attributes.title] = obj.id;
+					}
+
+					this.indexPatterns = indexPatternMappings; 
+					
+					resolve();
+				});	
+		});
+
+	};
+	
+	
+	/**
+	 * Finds the Kibana Index Pattern UUID that matches an Elasticsearch Index name
+	 */
+	getIndexID(elasticIndexName){
+	
+		let uuid = null;
+	
+		for(const [k, v] of Object.entries(this.indexPatterns)){
+		    const patt = new RegExp(k);
+		    if(patt.test(elasticIndexName)){
+		        uuid = v
+		        return uuid;
+		    }
+		}
+		
+		return uuid;
+	}
 	
 	
 	/**
 	 * Generates convenience links to the original document highlighted in the alert
 	 */
-	generateKibanaLinks(id, index, timestamp){
+	generateKibanaLinks(id, indexPatternName, timestamp){
 		
-		let indexId = this.indexPatterns[index];
-
+		let indexId = this.getIndexID(indexPatternName);
+		
 		// Expand date ranges for our context selection
 		let dateObj = new Date(Date.parse(timestamp));
 
@@ -106,36 +156,8 @@ export class Main extends React.Component {
 		
 		return { documentLink, contextLink };
 	}
-
 	
-	/**
-	 * Creates array mapping of ID->Title for every Kibana Index Pattern
-	 */
-	fetchIndices(){
-		fetch('../api/saved_objects/_find?type=index-pattern&fields=title&per_page=10000')
-			.then(response => {
-				if (!response.ok) {
-					alert("Failed to fetch index patterns - try refreshing the page.");
-					console.error(response);
-					throw "Failed to fetch index patterns."
-				} else {	
-					return response.json();	
-				}
-			})
-			.then(data =>{
-				let indexPatternMappings = {};
-				
-				for(let obj of data.saved_objects){
-					indexPatternMappings[obj.attributes.title] = obj.id;
-				}
-				
-				this.indexPatterns = indexPatternMappings; 
-			});	
-
-
-	};
-
-
+	
 	/**
 	 * Flattens nested Object into single layer Object
 	 */
