@@ -1,22 +1,24 @@
-import React from 'react';
+import React from "react";
 import {
-  EuiPage,
-  EuiPageHeader,
-  EuiTitle,
-  EuiPageBody,
-  EuiPageContent,
-  EuiPageContentBody,
-  EuiButton,
-  EuiButtonIcon,
-  EuiDescriptionList,
-  EuiInMemoryTable,
-  EuiSpacer,
-  EuiFlexGroup,
-  EuiFlexItem,
-  EuiSwitch
-  } from '@elastic/eui';
+	EuiPage,
+	EuiPageHeader,
+	EuiTitle,
+	EuiPageBody,
+	EuiPageContent,
+	EuiPageContentBody,
+	EuiButton,
+	EuiButtonIcon,
+	EuiIconTip,
+	EuiDescriptionList,
+	EuiInMemoryTable,
+	EuiSpacer,
+	EuiFlexGroup,
+	EuiFlexItem,
+	EuiSwitch
+} from "@elastic/eui";
 
-import { RIGHT_ALIGNMENT } from '@elastic/eui/lib/services';
+import { RIGHT_ALIGNMENT } from "@elastic/eui/lib/services";
+
 
 /**
  * Table that displays ElastAlert's and allows for acknowledging
@@ -77,7 +79,7 @@ export class Main extends React.Component {
 	 * Forces update of the table by regenerating it's unique key
 	 */
 	rerenderTable(){
-		const rand = [...Array(10)].map(i=>(~~(Math.random()*36)).toString(36)).join('');
+		const rand = [...Array(10)].map(i=>(~~(Math.random()*36)).toString(36)).join("");
 	
 		this.setState({
 			key: rand
@@ -90,7 +92,7 @@ export class Main extends React.Component {
 	 */
 	fetchIndexPatterns(){
 		return new Promise((resolve, reject) => {
-			fetch('../api/saved_objects/_find?type=index-pattern&fields=title&per_page=10000')
+			fetch("../api/saved_objects/_find?type=index-pattern&fields=title&per_page=10000")
 				.then(response => {
 					if (!response.ok) {
 						alert("Failed to fetch index patterns - try refreshing the page.");
@@ -146,12 +148,12 @@ export class Main extends React.Component {
 		let dateObj = new Date(Date.parse(timestamp));
 
 		let startDateObj =  new Date(dateObj.getTime());
-		startDateObj.setHours('00', '00', '00');
+		startDateObj.setHours("00", "00", "00", "000");
 		
 		let endDateObj = new Date(dateObj.getTime());
-		endDateObj.setHours('23', '59', '59')
+		endDateObj.setHours("23", "59", "59", "999")
 		
-		const documentLink = `../app/kibana#/discover?_g=(filters:!(),refreshInterval:(pause:!t,value:0),time:(from:'${timestamp}',to:'${timestamp}'))&_a=(columns:!(_source),filters:!(),index:'${indexId}',interval:auto,query:(language:kuery,query:'_id%20:"${id}"'),sort:!(!('@timestamp',desc)))`
+		const documentLink = `../app/kibana#/discover?_g=(filters:!(),refreshInterval:(pause:!t,value:0),time:(from:'${startDateObj.toISOString()}',to:'${endDateObj.toISOString()}'))&_a=(columns:!(_source),filters:!(),index:'${indexId}',interval:auto,query:(language:kuery,query:'_id%20:"${id}"'),sort:!(!('@timestamp',desc)))`
 		const contextLink = `../app/kibana#/discover/context/${indexId}/${id}?_a=(columns:!(_source),filters:!(),predecessorCount:5,sort:!('@timestamp',desc),successorCount:5)&_g=(filters:!(),refreshInterval:(pause:!t,value:0),time:(from:'${startDateObj.toISOString()}',to:'${endDateObj.toISOString()}'))`		
 		
 		return { documentLink, contextLink };
@@ -325,31 +327,31 @@ export class Main extends React.Component {
 	
 		const columns = [
 			{
-				field: 'alert_time',
-				name: 'Detection Date',
-				dataType: 'date',
+				field: "alert_time",
+				name: "Detection Date",
+				dataType: "date",
 				sortable: (item => {
 					return new Date(item.match_time);
 				})
 			},
 			{
-				field: 'match_time',
-				name: 'Event Date',
-				dataType: 'date',
+				field: "match_time",
+				name: "Event Date",
+				dataType: "date",
 				sortable: (item => {
 					return new Date(item.match_time);
 				})
 			},		
 			{
-				field: 'rule_name',
-				name: 'Rule',
-				dataType: 'string',
+				field: "rule_name",
+				name: "Rule",
+				dataType: "string",
 				sortable: true
 			},			
 			{
-				field: '_id',
-				name: 'ID',
-				dataType: 'string',
+				field: "_id",
+				name: "ID",
+				dataType: "string",
 				sortable: true
 			},			
 			{ 
@@ -358,31 +360,48 @@ export class Main extends React.Component {
 					const { documentLink, contextLink } = this.generateKibanaLinks(item.match_body["_id"], item.match_body["_index"], item.match_body["@timestamp"]);
 					
 					return (
-						<div>
-							<EuiButtonIcon
-								href={documentLink}
-								aria-label='View Original Document'
-								iconType='link'
-							/>
-							|
-							<EuiButtonIcon
-								href={contextLink}
-								aria-label='View Context Documents'
-								iconType='bullseye'
-							/>
-						</div>
+						<EuiFlexGroup justifyContent="flexEnd">
+							<EuiFlexItem grow={false}>
+								<a
+									href={documentLink}
+									target="_blank"
+								>
+									<EuiIconTip
+										aria-label="View Original Document"
+										type="link"
+										content="View Original Document"
+									/>
+								</a>
+							</EuiFlexItem>
+							<EuiFlexItem grow={false}>
+								|
+							</EuiFlexItem>
+							
+							<EuiFlexItem grow={false}>
+								<a 
+									href={contextLink}
+									target="_blank"
+								>
+									<EuiIconTip
+										aria-label="Context: View Surrounding Documents"
+										type="bullseye"
+										content="Context: View Surrounding Documents"
+									/>
+								</a>
+							</EuiFlexItem>
+						</EuiFlexGroup>
 					)
 				},
 			},			
 			{ 
 				align: RIGHT_ALIGNMENT,
-				width: '40px',
+				width: "40px",
 				isExpander: true,
 				render: item => (
 					<EuiButtonIcon
 						onClick={() => this.toggleDetails(item)}
-						aria-label={this.state.itemIdToExpandedRowMap[item._id] ? 'Collapse' : 'Expand'}
-						iconType={this.state.itemIdToExpandedRowMap[item._id] ? 'arrowUp' : 'arrowDown'}
+						aria-label={this.state.itemIdToExpandedRowMap[item._id] ? "Collapse" : "Expand"}
+						iconType={this.state.itemIdToExpandedRowMap[item._id] ? "arrowUp" : "arrowDown"}
 					/>
 				),
 			},
@@ -397,14 +416,14 @@ export class Main extends React.Component {
 		const selection = {
 			selectable: item => !item.acknowledged,
 			selectableMessage: selectable =>
-				!selectable ? 'Alert already acknowledged' : undefined,
+				!selectable ? "Alert already acknowledged" : undefined,
 			onSelectionChange: this.onSelectionChange,
 		};
 		
 		const defaultSorting = {
 			sort: {
-				field: 'Detection Date',
-				direction: 'asc',
+				field: "Detection Date",
+				direction: "asc",
 			},
 		};
 		
